@@ -1,56 +1,90 @@
-import React, { useEffect, useState } from 'react';
-import { Container } from 'react-bootstrap';
-import axios from 'axios';
-import TodoForm from './TodoForm';
-import TodoTable from './TodoTable';
+import React, { useEffect, useState } from "react";
+import Todo from "./Todo";
+import SignOut from "./SignOut";
 
-const App = () => {
-  const [todos, setTodos] = useState([]);
+const base_url = "http://localhost:5000";
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const signOut = () => {
+    localStorage.removeItem('token');
+    setToken('');
+    setUser(null);
+  };
+
+  const login = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${base_url}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) throw new Error("Login failed");
+
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Invalid credentials");
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken("");
+    setUser(null);
+  };
 
   useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  const fetchTodos = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/todos/');
-      setTodos(response.data);
-    } catch (error) {
-      console.error('Error fetching todos:', error);
+    if (token && !user) {
+      // Optionally fetch user details using token if needed
     }
-  };
-
-  const addTodo = async (title) => {
-    try {
-      const newTodo = {
-        title,
-        order: todos.length + 1,
-        completed: false,
-      };
-      const response = await axios.post('http://localhost:5000/todos/', newTodo);
-      setTodos([...todos, response.data]);
-    } catch (error) {
-      console.error('Error adding todo:', error);
-    }
-  };
-
-  const toggleComplete = async (todo) => {
-    try {
-      const updatedTodo = { ...todo, completed: !todo.completed };
-      await axios.put(todo.url, updatedTodo);
-      setTodos(todos.map(t => t.url === todo.url ? updatedTodo : t));
-    } catch (error) {
-      console.error('Error updating todo:', error);
-    }
-  };
+  }, [token]);
 
   return (
-    <Container className="mt-4">
-      <h2 className="mb-4">Todo List</h2>
-      <TodoForm addTodo={addTodo} />
-      <TodoTable todos={todos} toggleComplete={toggleComplete} />
-    </Container>
+    <div style={{ padding: "2rem" }}>
+      {token ? (
+        <>
+          <h2>Welcome, {user?.name || "User"}!</h2>
+          <SignOut onSignOut={signOut} />
+          <Todo />
+          <button onClick={logout}>Logout</button>
+        </>
+      ) : (
+        <form onSubmit={login}>
+          <h2>Login</h2>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <br />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <br />
+          <button type="submit">Login</button>
+        </form>
+      )}
+    </div>
   );
-};
+}
 
 export default App;
