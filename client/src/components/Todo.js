@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Container } from 'react-bootstrap';
-import axios from 'axios';
-import TodoForm from '../TodoForm';
-import TodoTable from '../TodoTable';
+import React, { useEffect, useState } from "react";
+import { Container } from "react-bootstrap";
+import axios from "axios";
+import TodoForm from "../TodoForm";
+import TodoTable from "../TodoTable";
 
 const Todo = () => {
   const [todos, setTodos] = useState([]);
@@ -13,10 +13,10 @@ const Todo = () => {
 
   const fetchTodos = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/todos/');
+      const response = await axios.get("http://localhost:5000/todos/");
       setTodos(response.data);
     } catch (error) {
-      console.error('Error fetching todos:', error);
+      console.error("Error fetching todos:", error);
     }
   };
 
@@ -27,20 +27,27 @@ const Todo = () => {
         order: todos.length + 1,
         completed: false,
       };
-      const response = await axios.post('http://localhost:5000/todos/', newTodo);
+      const response = await axios.post(
+        "http://localhost:5000/todos/",
+        newTodo
+      );
       setTodos([...todos, response.data]);
     } catch (error) {
-      console.error('Error adding todo:', error);
+      console.error("Error adding todo:", error);
     }
   };
 
   const toggleComplete = async (todo) => {
     try {
-      const updatedTodo = { ...todo, completed: !todo.completed };
-      await axios.put(todo.url, updatedTodo);
-      setTodos(todos.map(t => t.url === todo.url ? updatedTodo : t));
+      const updatedTodo = {
+        title: todo.title,
+        order: todo.order,
+        completed: !todo.completed,
+      };
+      await axios.patch(todo.url, updatedTodo);
+      setTodos(todos.map((t) => (t.url === todo.url ? updatedTodo : t)));
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error("Error updating todo:", error);
     }
   };
 
@@ -52,6 +59,5 @@ const Todo = () => {
     </Container>
   );
 };
-
 
 export default Todo;
