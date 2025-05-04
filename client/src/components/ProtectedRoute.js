@@ -4,7 +4,7 @@ import SignOut from "./SignOut";
 
 const base_url = "http://localhost:5000";
 
-function App() {
+function ProtectedRoute() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [email, setEmail] = useState("");
@@ -87,4 +87,4 @@ function App() {
   );
 }
 
-export default App;
+export default ProtectedRoute;

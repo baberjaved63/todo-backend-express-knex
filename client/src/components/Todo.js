@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Container } from 'react-bootstrap';
 import axios from 'axios';
-import TodoForm from './TodoForm';
-import TodoTable from './TodoTable';
+import TodoForm from '../TodoForm';
+import TodoTable from '../TodoTable';
 
 const Todo = () => {
   const [todos, setTodos] = useState([]);
