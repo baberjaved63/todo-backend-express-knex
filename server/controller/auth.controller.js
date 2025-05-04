@@ -3,6 +3,7 @@ const user = require("../database/user-queries.js");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const addErrorReporting = require("../utils/error-reports.js");
+const jwt = require("jsonwebtoken");
 
 function createUser(req, data) {
   const protocol = req.protocol,
@@ -51,11 +52,22 @@ async function loginUser(req, res) {
   if (error) return res.status(400).send(error.details[0].message);
 
   const userData = await user.getByEmail(req.body.email);
-  let passwordMatch = await bcrypt.compare(req.body.password, userData.password);
+  let passwordMatch = await bcrypt.compare(
+    req.body.password,
+    userData.password
+  );
   console.log(passwordMatch);
-  
+
   if (!passwordMatch) return res.status(400).send("Invalid password");
-  return res.send({ user: createUser(req, userData) });
+
+  let token = jwt.sign({ id: userData.id }, process.env.JWT_SECRET);
+
+  return res.send({ user: createUser(req, userData), token });
+}
+
+async function userProfile(req, res) {
+  const userData = await user.get(req.user.id);
+  return res.send(createUser(req, userData));
 }
 
 const toExport = {
@@ -66,6 +78,10 @@ const toExport = {
   loginUser: {
     method: loginUser,
     errorMessage: "Could not login User",
+  },
+  userProfile: {
+    method: userProfile,
+    errorMessage: "Could not find User",
   },
 };
 

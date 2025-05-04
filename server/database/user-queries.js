@@ -12,7 +12,13 @@ async function getByEmail(email) {
   return results[0];
 }
 
+async function get(id) {
+  const results = await knex("users").where({ id });
+  return results[0];
+}
+
 module.exports = {
   create,
   getByEmail,
+  get,
 };
